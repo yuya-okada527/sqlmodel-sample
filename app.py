@@ -9,6 +9,14 @@ class Hero(SQLModel, table=True):
     secret_name: str
     age: Optional[int] = None
 
+    team_id: Optional[int] = Field(default=None, foreign_key="team.id")
+
+
+class Team(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    headquarters: str
+
 
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -84,10 +92,10 @@ def delete_heroes():
 
 def main():
     create_db_and_tables()
-    create_heroes()
-    select_heroes()
-    update_heroes()
-    delete_heroes()
+    # create_heroes()
+    # select_heroes()
+    # update_heroes()
+    # delete_heroes()
 
 
 if __name__ == "__main__":
