@@ -42,10 +42,9 @@ def create_heroes():
 
 def select_heroes():
     with Session(engine) as session:
-        statement = select(Hero).where(or_(Hero.age <= 35, Hero.age > 90))
-        results = session.exec(statement)
-        for hero in results:
-            print(hero)
+        statement = select(Hero).offset(3).limit(3)
+        results = session.exec(statement).all()
+        print(results)
 
 def main():
     create_db_and_tables()
