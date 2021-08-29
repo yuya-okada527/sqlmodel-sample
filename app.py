@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 
-from sqlmodel import Field, SQLModel, create_engine, Session, select, or_
+from sqlmodel import Field, SQLModel, create_engine, Session, select, or_, Relationship
 
 
 class Hero(SQLModel, table=True):
@@ -10,12 +10,15 @@ class Hero(SQLModel, table=True):
     age: Optional[int] = None
 
     team_id: Optional[int] = Field(default=None, foreign_key="team.id")
+    team: Optional["Team"] = Relationship(back_populates="heroes")
 
 
 class Team(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     headquarters: str
+
+    heroes: List["Hero"] = Relationship(back_populates="team")
 
 
 sqlite_file_name = "database.db"
@@ -94,20 +97,17 @@ def create_heroes():
     with Session(engine) as session:
         team_preventers = Team(name="Preventers", headquarters="Sharp Tower")
         team_z_force = Team(name="Z-Force", headquarters="Sister Margaret's Bar")
-        session.add(team_preventers)
-        session.add(team_z_force)
-        session.commit()
 
         hero_deadpond = Hero(
             name="Deadpond",
             secret_name="Dive Wilson",
-            team_id=team_z_force.id
+            team=team_z_force
         )
         hero_rusty_man = Hero(
             name="Rusty-Man",
             secret_name="Tommy Sharp",
             age=48,
-            team_id=team_preventers.id
+            team=team_preventers
         )
         hero_spider_boy = Hero(name="Spider-Boy", secret_name="Pedro Parquedor")
         session.add(hero_deadpond)
@@ -122,6 +122,22 @@ def create_heroes():
         print("Created hero:", hero_deadpond)
         print("Created hero:", hero_rusty_man)
         print("Created hero:", hero_spider_boy)
+
+        hero_spider_boy.team = team_preventers
+        session.add(hero_spider_boy)
+        session.commit()
+        session.refresh(hero_spider_boy)
+        print("Updated hero:", hero_spider_boy)
+
+        hero_black_lion = Hero(name="Black Lion", secret_name="Trevor Challa", age=35)
+        hero_sure_e = Hero(name="Princess Sure-E", secret_name="Sure-E")
+        team_wakaland = Team(
+            name="Wakaland",
+            headquarters="Wakaland Capital City",
+            heroes=[hero_black_lion, hero_sure_e]
+        )
+        session.add(team_wakaland)
+        session.commit()
 
 
 def select_heroes():
